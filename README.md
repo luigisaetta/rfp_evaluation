@@ -4,7 +4,7 @@ answers to a RFP document.
 
 ## Design and implementation
 The agent has been implemented using:
-* **OCI Genrative AI**
-* **Langgraph
+* **OCI Generative AI**
+* **Langgraph**
 
 
