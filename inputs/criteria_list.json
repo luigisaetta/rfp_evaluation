@@ -1,0 +1,10 @@
+{
+  "criteria_list": [
+    "Completeness: Check that all the questions have been answered.",
+    "Quality: Assess the clarity, coherence, and professionalism of the responses.",
+    "Relevance: Ensure that the answers directly address the questions posed in the RFP.",
+    "Feasibility: Evaluate whether the proposed solutions are practical and achievable within the given constraints.",
+    "Costs: Analyze the cost-effectiveness of the proposals. Also, analyze if costs are clear and well specified.",
+    "Value: Determine if the responses offer good value for money and align with the organization's goals."
+  ]
+}
