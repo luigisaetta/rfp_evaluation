@@ -1,42 +1,12 @@
 """
 Streamlit UI
 """
-
-import json
-from pathlib import Path
-from typing import List
-from pypdf import PdfReader
 import streamlit as st
 
 from workflow import create_workflow
 from eval_state import EvaluationState
-
-
-# Helper:
-# read PDF or TXT file
-def read_file(file) -> str:
-    """Reads a PDF or TXT file and returns its content."""
-    file_type = Path(file.name).suffix.lower()
-    if file_type == ".pdf":
-        reader = PdfReader(file)
-        return "\n".join([page.extract_text() or "" for page in reader.pages])
-    if file_type in [".txt", ".md"]:
-        return file.read().decode("utf-8")
-
-    st.error("Unsupported file type. Please upload a PDF or TXT file.")
-    return ""
-
-
-# read JSON
-def load_criteria(file) -> List[str]:
-    """Load criteria from an uploaded JSON file."""
-    try:
-        data = json.load(file)
-        return data.get("criteria_list", [])
-    except Exception as e:
-        st.error(f"Error reading criteria JSON: {e}")
-        return []
-
+from ui_utils import read_file, load_criteria
+from config import MODEL_ID
 
 #
 # Main UI code
@@ -47,11 +17,16 @@ st.title("📄 RFP Evaluation Agent")
 
 # Sidebar inputs
 st.sidebar.header("🔧 Configuration")
+st.sidebar.markdown("### LLM Model in Use")
+st.sidebar.info(f"🔍 **{MODEL_ID}**")
+
 rfp_file = st.sidebar.file_uploader("Upload RFP File (PDF)", type=["pdf"])
 rfp_answer_file = st.sidebar.file_uploader("Upload RFP Answer File (PDF)", type=["pdf"])
-criteria_file = st.sidebar.file_uploader("Upload Criteria JSON", type=["json"])
+criteria_file = st.sidebar.file_uploader("Upload Criteria (JSON)", type=["json"])
 
 run_button = st.sidebar.button("🚀 Run Evaluation")
+# added the progress bar
+progress_bar = st.sidebar.progress(0)
 
 # Main UI
 if run_button:
@@ -84,9 +59,13 @@ if run_button:
         }
 
         app = create_workflow()
+        
         # start the agent
-
         results = []
+        # for the progress bar
+        # eval steps + final report
+        n_total_steps = len(criteria_list) + 1
+        n_steps_completed = 0
         for event in app.stream(
             initial_state,
         ):
@@ -94,12 +73,21 @@ if run_button:
                 MSG = f"Completed: {key} step!"
                 st.toast(MSG)
 
+                # save the status after the step...
+                # for now, we're using only the last one
                 results.append(value)
+
+                # update the progress bar only for eval steps and final generation
+                if key in ("evaluate", "generate_report"):
+                    n_steps_completed += 1
+                    progress = n_steps_completed / n_total_steps
+                    # update the bar
+                    progress_bar.progress(progress)
 
         # get the final state from the list
         final_state = results[-1]
 
-    # Show report
+    # Show the final report
     st.success("✅ Evaluation Completed")
     st.subheader("📊 Final Report")
     st.markdown(final_state.get("final_report", ""), unsafe_allow_html=True)
