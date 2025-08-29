@@ -6,5 +6,12 @@ answers to a RFP document.
 The agent has been implemented using:
 * **OCI Generative AI**
 * **Langgraph**
+* Streamlit UI
 
-
+# Features
+* Totally modular
+* All the files (RFP, answer, criteria list) can be uploaded from the UI
+* The LLM model used can be changed from the config
+* [Prompts](./prompts.py) used to evaluate criteria and to generate the final report saved in a dedicated file 
+* UI interface + batch provided
+* Report saved in **Markdown** format
